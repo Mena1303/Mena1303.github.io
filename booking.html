@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จองคิวร้านอาหาร</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: white;
+            color: #ff6b35;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .logout-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .restaurants-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .restaurant-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .restaurant-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .restaurant-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #fff3e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        
+        .restaurant-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .restaurant-info h3 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .restaurant-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .queue-info {
+            background: #fff3e0;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .queue-info span {
+            color: #ff6b35;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .queue-count {
+            background: white;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .seats-selector {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .seats-label {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .seats-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .seats-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: #ff6b35;
+            color: white;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .seats-btn:hover {
+            background: #ff5722;
+        }
+
+        .seats-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .seats-count {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ff6b35;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .book-btn:hover {
+            background: #ff5722;
+        }
+
+        .book-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .success-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            text-align: center;
+            min-width: 300px;
+        }
+
+        .success-popup.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .success-popup h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .success-popup p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .close-popup-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .close-popup-btn:hover {
+            background: #ff5722;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🍽️ Queue Reservation System</h1>
+            <div class="user-info">
+                <span>Welcome, <strong id="userName"></strong></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="restaurants-grid">
+            <!-- Restaurant 1 -->
+            <div class="restaurant-card">
+                <div class="restaurant-header">
+                    <div class="restaurant-icon">
+                        <img src="https://img.wongnai.com/p/1920x0/2020/06/10/fe7f1e659eb04b4ca4407668961718b0.jpg" alt="teenoi">
+                    </div>
+                    <div class="restaurant-info">
+                        <h3>Teenoi</h3>
+                        <p>Pure Suki Bliss at a Price You'll Love.</p>
+                    </div>
+                </div>
+                <div class="queue-info">
+                    <span>current queue:</span>
+                    <span class="queue-count" id="queue-Teenoi">0</span>
+                </div>
+                <div class="seats-selector">
+                    <span class="seats-label">Number of Seats</span>
+                    <div class="seats-controls">
+                        <button class="seats-btn" onclick="decreaseSeats('restaurant1')">-</button>
+                        <span class="seats-count" id="seats-restaurant1">1</span>
+                        <button class="seats-btn" onclick="increaseSeats('restaurant1')">+</button>
+                    </div>
+                </div>
+                <button class="book-btn" onclick="bookTable('Teenoi', 'restaurant1')">Book Now</button>
+            </div>
+
+            <!-- Restaurant 2 -->
+            <div class="restaurant-card">
+                <div class="restaurant-header">
+                    <div class="restaurant-icon">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw3QfnQMHOblsdTHItP35KjJfeAOvITetvFQ&s" alt="katsumidori">
+                    </div>
+                    <div class="restaurant-info">
+                        <h3>Katsumidori</h3>
+                        <p>Authentic Taste of Japan in Every Bite.</p>
+                    </div>
+                </div>
+                <div class="queue-info">
+                    <span>current queue:</span>
+                    <span class="queue-count" id="queue-Katsumidori">0</span>
+                </div>
+                <div class="seats-selector">
+                    <span class="seats-label">Number of Seats</span>
+                    <div class="seats-controls">
+                        <button class="seats-btn" onclick="decreaseSeats('restaurant2')">-</button>
+                        <span class="seats-count" id="seats-restaurant2">1</span>
+                        <button class="seats-btn" onclick="increaseSeats('restaurant2')">+</button>
+                    </div>
+                </div>
+                <button class="book-btn" onclick="bookTable('Katsumidori', 'restaurant2')">Book Now</button>
+            </div>
+
+            <!-- Restaurant 3 -->
+            <div class="restaurant-card">
+                <div class="restaurant-header">
+                    <div class="restaurant-icon">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-eM4N6sja2g31VImKQQ4Ua3A-mOQsUuylLw&s" alt="hotpotman">
+                    </div>
+                    <div class="restaurant-info">
+                        <h3>Hotpot Man</h3>
+                        <p>All-You-Can-Eat Bliss for Mala Lover.</p>
+                    </div>
+                </div>
+                <div class="queue-info">
+                    <span>current queue:</span>
+                    <span class="queue-count" id="queue-Hotpot Man">0</span>
+                </div>
+                <div class="seats-selector">
+                    <span class="seats-label">Number of Seats</span>
+                    <div class="seats-controls">
+                        <button class="seats-btn" onclick="decreaseSeats('restaurant3')">-</button>
+                        <span class="seats-count" id="seats-restaurant3">1</span>
+                        <button class="seats-btn" onclick="increaseSeats('restaurant3')">+</button>
+                    </div>
+                </div>
+                <button class="book-btn" onclick="bookTable('Hotpot Man', 'restaurant3')">Book Now</button>
+            </div>
+
+            <!-- Restaurant 4 -->
+            <div class="restaurant-card">
+                <div class="restaurant-header">
+                    <div class="restaurant-icon">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsk0-FZRCkpsIJ15F3_X2Zl56aLDB74nM7pw&s" alt="Hasul">
+                    </div>
+                    <div class="restaurant-info">
+                        <h3>Hasul</h3>
+                        <p>A Taste of Seoul, Served Right Here.</p>
+                    </div>
+                </div>
+                <div class="queue-info">
+                    <span>current queue:</span>
+                    <span class="queue-count" id="queue-Hasul">0</span>
+                </div>
+                <div class="seats-selector">
+                    <span class="seats-label">Number of Seats</span>
+                    <div class="seats-controls">
+                        <button class="seats-btn" onclick="decreaseSeats('restaurant4')">-</button>
+                        <span class="seats-count" id="seats-restaurant4">1</span>
+                        <button class="seats-btn" onclick="increaseSeats('restaurant4')">+</button>
+                    </div>
+                </div>
+                <button class="book-btn" onclick="bookTable('Hasul', 'restaurant4')">Book Now</button>
+            </div>
+
+            <!-- Restaurant 5 -->
+            <div class="restaurant-card">
+                <div class="restaurant-header">
+                    <div class="restaurant-icon">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyqFv2EKohed8-zjkFtQCb8auU-4Q1ALrdqQ&s" alt="bbq">
+                    </div>
+                    <div class="restaurant-info">
+                        <h3>BBQ Plaza</h3>
+                        <p>Every Meal is a Celebration at BBQ Plaza.</p>
+                    </div>
+                </div>
+                <div class="queue-info">
+                    <span>current queue:</span>
+                    <span class="queue-count" id="queue-BBQ Plaza">0</span>
+                </div>
+                <div class="seats-selector">
+                    <span class="seats-label">Number of Seats</span>
+                    <div class="seats-controls">
+                        <button class="seats-btn" onclick="decreaseSeats('restaurant5')">-</button>
+                        <span class="seats-count" id="seats-restaurant5">1</span>
+                        <button class="seats-btn" onclick="increaseSeats('restaurant5')">+</button>
+                    </div>
+                </div>
+                <button class="book-btn" onclick="bookTable('BBQ Plaza', 'restaurant5')">Book Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closePopup()"></div>
+    <div class="success-popup" id="successPopup">
+        <div class="success-icon">✅</div>
+        <h2>Booking Successful!</h2>
+        <p id="bookingDetails"></p>
+        <p style="font-size: 14px; color: #999;">Thank you</p>
+        <button class="close-popup-btn" onclick="closePopup()">close</button>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('userName').textContent = currentUser.fullname;
+        }
+
+        // Restaurant name mapping to queue element IDs
+        const restaurantQueueMap = {
+            'Teenoi': 'queue-Teenoi',
+            'Katsumidori': 'queue-Katsumidori',
+            'Hotpot Man': 'queue-Hotpot Man',
+            'Hasul': 'queue-Hasul',
+            'BBQ Plaza': 'queue-BBQ Plaza'
+        };
+
+        // Function to update queue displays
+        function updateQueueDisplays() {
+            let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const now = Date.now();
+            
+            // Remove bookings older than 60 seconds
+            bookings = bookings.filter(booking => {
+                const bookingTime = new Date(booking.timestamp).getTime();
+                return (now - bookingTime) < 60000; // 60000ms = 60 seconds
+            });
+            
+            // Update localStorage with filtered bookings
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+            
+            // Count queues per restaurant
+            const queueCounts = {};
+            bookings.forEach(booking => {
+                queueCounts[booking.restaurantName] = (queueCounts[booking.restaurantName] || 0) + 1;
+            });
+            
+            // Update all queue displays
+            Object.keys(restaurantQueueMap).forEach(restaurantName => {
+                const queueElement = document.getElementById(restaurantQueueMap[restaurantName]);
+                if (queueElement) {
+                    queueElement.textContent = queueCounts[restaurantName] || 0;
+                }
+            });
+        }
+
+        // Seat management
+        function increaseSeats(restaurantId) {
+            const seatsElement = document.getElementById(`seats-${restaurantId}`);
+            let currentSeats = parseInt(seatsElement.textContent);
+            if (currentSeats < 10) {
+                seatsElement.textContent = currentSeats + 1;
+            }
+        }
+
+        function decreaseSeats(restaurantId) {
+            const seatsElement = document.getElementById(`seats-${restaurantId}`);
+            let currentSeats = parseInt(seatsElement.textContent);
+            if (currentSeats > 1) {
+                seatsElement.textContent = currentSeats - 1;
+            }
+        }
+
+        // Book table function
+        async function bookTable(restaurantName, restaurantId) {
+            const seats = parseInt(document.getElementById(`seats-${restaurantId}`).textContent);
+            const bookingData = {
+                restaurantName: restaurantName,
+                customerName: currentUser.fullname,
+                customerEmail: currentUser.email,
+                customerPhone: currentUser.phone,
+                seats: seats,
+                bookingDate: new Date().toLocaleDateString('th-TH'),
+                bookingTime: new Date().toLocaleTimeString('th-TH'),
+                timestamp: new Date().toISOString()
+            };
+
+            
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytNEBFLymJ7VdGd-0nkZuQkkNmn3XcOSpEMzSB0JL7XrvBq4tCau6bOyStMeZHDkem/exec';
+
+            try {
+                // Send to Google Sheets
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                // Save to localStorage
+                let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+                bookings.push(bookingData);
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+
+                // Update queue display immediately
+                updateQueueDisplays();
+
+                // Show success popup
+                document.getElementById('bookingDetails').innerHTML = `
+                    <strong>${restaurantName}</strong><br>
+                    Number of seats: ${seats}<br>
+                    Date: ${bookingData.bookingDate}<br>
+                    Time: ${bookingData.bookingTime}
+                `;
+                document.getElementById('overlay').classList.add('show');
+                document.getElementById('successPopup').classList.add('show');
+
+                // Reset seats to 1
+                document.getElementById(`seats-${restaurantId}`).textContent = '1';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการจองคิว กรุณาลองใหม่อีกครั้ง');
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('successPopup').classList.remove('show');
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize queue displays on page load
+        updateQueueDisplays();
+
+        // Update queue displays every second
+        setInterval(updateQueueDisplays, 1000);
+    </script>
+</body>
+</html>
