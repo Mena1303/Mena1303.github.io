@@ -201,6 +201,7 @@
                 errorMsg.style.display = 'block';
                 return;
             }
+            const user_id = 'USR-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
             
             // Add new user
             const newUser = {
