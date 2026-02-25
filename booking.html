@@ -449,6 +449,14 @@
             document.getElementById('userName').textContent = currentUser.fullname;
         }
 
+        const restaurantIdMap = {
+            'Teenoi':      'R001',
+            'Katsumidori': 'R002',
+            'Hotpot Man':  'R003',
+            'Hasul':       'R004',
+            'BBQ Plaza':   'R005'
+        };
+
         // Restaurant name mapping to queue element IDs
         const restaurantQueueMap = {
             'Teenoi': 'queue-Teenoi',
@@ -458,6 +466,45 @@
             'BBQ Plaza': 'queue-BBQ Plaza'
         };
 
+        // Function to generate 6-digit number from email
+        function generateSixDigitFromEmail(email) {
+            // สร้าง hash จาก email โดยใช้ charCodeAt
+            let hash = 0;
+            for (let i = 0; i < email.length; i++) {
+                hash = ((hash << 5) - hash) + email.charCodeAt(i);
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            // ทำให้เป็นเลขบวกและเอาเฉพาะ 6 หลักสุดท้าย
+            const sixDigit = Math.abs(hash) % 1000000;
+            // เติมเลข 0 ข้างหน้าให้ครบ 6 หลัก
+            return sixDigit.toString().padStart(6, '0');
+        }
+
+        // Function to get user_id from email (fixed ID based on email)
+        function getUserIdFromEmail(email) {
+            // สร้างเลข 6 หลักจาก email
+            const sixDigit = generateSixDigitFromEmail(email);
+            return `usr-${sixDigit}`;
+        }
+
+        // Function to get next queue number for a restaurant
+        function getNextQueueNumber(restaurantName) {
+            let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const now = Date.now();
+            
+            // Filter out old bookings (older than 60 seconds)
+            bookings = bookings.filter(booking => {
+                const bookingTime = new Date(booking.timestamp).getTime();
+                return (now - bookingTime) < 60000;
+            });
+            
+            // Count current queues for this restaurant
+            const queueCount = bookings.filter(b => b.restaurantName === restaurantName).length;
+            
+            // Next queue number is current count + 1
+            return queueCount + 1;
+        }
+
         // Function to update queue displays
         function updateQueueDisplays() {
             let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
@@ -466,7 +513,7 @@
             // Remove bookings older than 60 seconds
             bookings = bookings.filter(booking => {
                 const bookingTime = new Date(booking.timestamp).getTime();
-                return (now - bookingTime) < 60000; // 60000ms = 60 seconds
+                return (now - bookingTime) < 60000;
             });
             
             // Update localStorage with filtered bookings
@@ -507,18 +554,32 @@
         // Book table function
         async function bookTable(restaurantName, restaurantId) {
             const seats = parseInt(document.getElementById(`seats-${restaurantId}`).textContent);
+            
+            // Get fixed user_id from email (usr-เลข6หลัก)
+            const user_id = getUserIdFromEmail(currentUser.email);
+            
+            // Get next queue number for this restaurant
+            const queueNumber = getNextQueueNumber(restaurantName);
+            
+            // Create booking_id in format: BK-{queueNumber}-{restaurantId}
+            const restaurantCode = restaurantIdMap[restaurantName] || 'R000';
+            const booking_id = `BK-${String(queueNumber).padStart(3, '0')}-${restaurantCode}`;
+            
             const bookingData = {
+                booking_id: booking_id,
+                user_id: user_id,
+                restaurant_id: restaurantCode,
                 restaurantName: restaurantName,
                 customerName: currentUser.fullname,
                 customerEmail: currentUser.email,
                 customerPhone: currentUser.phone,
+                queueNumber: queueNumber,
                 seats: seats,
                 bookingDate: new Date().toLocaleDateString('th-TH'),
                 bookingTime: new Date().toLocaleTimeString('th-TH'),
                 timestamp: new Date().toISOString()
             };
 
-            
             const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytNEBFLymJ7VdGd-0nkZuQkkNmn3XcOSpEMzSB0JL7XrvBq4tCau6bOyStMeZHDkem/exec';
 
             try {
@@ -539,14 +600,18 @@
 
                 // Update queue display immediately
                 updateQueueDisplays();
-
-                // Show success popup
+                
+                // Show success popup with queue number and user_id
                 document.getElementById('bookingDetails').innerHTML = `
                     <strong>${restaurantName}</strong><br>
+                    Booking ID: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:13px;">${booking_id}</code><br>
+                    User ID: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:13px;">${user_id}</code><br>
+                    Queue Number: <strong style="color:#ff6b35;font-size:20px;">#${queueNumber}</strong><br>
                     Number of seats: ${seats}<br>
                     Date: ${bookingData.bookingDate}<br>
                     Time: ${bookingData.bookingTime}
                 `;
+                
                 document.getElementById('overlay').classList.add('show');
                 document.getElementById('successPopup').classList.add('show');
 
